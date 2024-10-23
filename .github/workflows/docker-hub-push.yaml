@@ -27,9 +27,12 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}         
 
-      - name: Get the version
+      - name: Get the version and transform tag
         id: get_version
-        run: echo VERSION=$(echo $GITHUB_REF | cut -d / -f 3) >> $GITHUB_OUTPUT
+        run: |
+          # Extract the version by removing 'prod-' prefix and adding 'v'
+          VERSION=$(echo $GITHUB_REF | cut -d / -f 3 | sed 's/^prod-/v/')
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
         
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -42,10 +45,3 @@ jobs:
           IMAGE_TAG: ${{ steps.get_version.outputs.VERSION }}
         run: |
           docker buildx build --platform $PLATFORMS -t $DOCKER_REGISTRY/$DOCKER_REPO:$IMAGE_TAG --push -f Dockerfile .
-
-      # - name: Show image digest
-      #   env:
-      #     IMAGE_TAG: ${{ steps.get_version.outputs.VERSION }}
-      
-      #   run: |
-      #     docker buildx imagetools inspect $IMAGE_TAG
