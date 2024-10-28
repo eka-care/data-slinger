@@ -1,4 +1,4 @@
-FROM python:3.11-slim-bullseye
+FROM python:3.11-bookworm
 
 # Install required system packages and tools
 RUN apt-get update \
