@@ -156,3 +156,8 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 STATIC_ROOT = str(BASE_DIR) + '/static/'
+
+try:
+    from webapp.settings import *
+except ImportError:
+    pass
