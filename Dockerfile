@@ -49,6 +49,9 @@ COPY ./middleware .
 # Run collectstatic for Django to collect static files
 RUN python3 manage.py collectstatic --noinput
 
+RUN python3 manage.py migrate
+RUN python3 manage.py creatersakey
+
 # Expose port 80 for HTTP traffic
 EXPOSE 80
 
