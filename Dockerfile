@@ -13,8 +13,8 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # Download the Oracle Instant Client (adjust URL for your version)
-RUN curl -o instantclient-basic-linux.x64.zip \
-    https://download.oracle.com/otn_software/linux/instantclient/instantclient-basic-linux.x64-21.1.0.0.0.zip
+RUN curl -L -o instantclient-basic-linux.x64.zip \
+    https://download.oracle.com/otn_software/linux/instantclient/2350000/instantclient-basic-linux.x64-23.5.0.24.07.zip
 
 # Unzip and configure the Oracle Instant Client
 RUN unzip instantclient-basic-linux.x64.zip -d /opt/oracle \
