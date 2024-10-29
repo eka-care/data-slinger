@@ -19,7 +19,8 @@ RUN curl -L -o instantclient-basic-linux.x64.zip \
 # Unzip and configure the Oracle Instant Client
 RUN unzip instantclient-basic-linux.x64.zip -d /opt/oracle \
     && rm instantclient-basic-linux.x64.zip
-RUN echo /opt/oracle/instantclient_21_1 > /etc/ld.so.conf.d/oracle-instantclient.conf \
+ENV LD_LIBRARY_PATH=/opt/oracle/instantclient
+RUN echo /opt/oracle/instantclient_23_5 > /etc/ld.so.conf.d/oracle-instantclient.conf \
     && ldconfig
 
 # Set timezone to Asia/Kolkata
