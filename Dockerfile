@@ -1,4 +1,4 @@
-FROM python:3.11-bookworm
+FROM python:3.11-slim-bullseye
 
 # Install required system packages and tools
 RUN apt-get update \
@@ -8,7 +8,19 @@ RUN apt-get update \
     default-mysql-client \
     pkg-config \
     curl \
+    libaio1 \
+    unzip \
     && rm -rf /var/lib/apt/lists/*
+
+# Download the Oracle Instant Client (adjust URL for your version)
+RUN curl -o instantclient-basic-linux.x64.zip \
+    https://download.oracle.com/otn_software/linux/instantclient/instantclient-basic-linux.x64-21.1.0.0.0.zip
+
+# Unzip and configure the Oracle Instant Client
+RUN unzip instantclient-basic-linux.x64.zip -d /opt/oracle \
+    && rm instantclient-basic-linux.x64.zip
+RUN echo /opt/oracle/instantclient_21_1 > /etc/ld.so.conf.d/oracle-instantclient.conf \
+    && ldconfig
 
 # Set timezone to Asia/Kolkata
 RUN rm -f /etc/localtime \
