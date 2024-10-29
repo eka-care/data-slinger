@@ -3,3 +3,4 @@ mysqlclient==2.2.4
 setuptools==75.1.0
 requests==2.32.3
 uWSGI==2.0.26
+cx-Oracle==8.3.0
