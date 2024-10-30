@@ -4,3 +4,4 @@ setuptools==75.1.0
 requests==2.32.3
 uWSGI==2.0.26
 cx-Oracle==8.3.0
+https://github.com/juanifioren/django-oidc-provider/archive/master.zip

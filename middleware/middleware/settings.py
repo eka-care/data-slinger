@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'webapp',
+    'app',
+    'oidc_provider',
 ]
 
 MIDDLEWARE = [
@@ -48,6 +50,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'oidc_provider.middleware.SessionManagementMiddleware',
 ]
 
 ROOT_URLCONF = 'middleware.urls'
@@ -63,6 +66,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.static',
             ],
         },
     },
@@ -156,3 +160,13 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 STATIC_ROOT = str(BASE_DIR) + '/static/'
+
+
+# OIDC Provider settings
+LOGIN_REDIRECT_URL = '/'
+
+SITE_URL = 'https://sudo.dev.orbi.health'
+OIDC_SESSION_MANAGEMENT_ENABLE = True
+
+
+CSRF_TRUSTED_ORIGINS = ['https://*.dev.orbi.health','https://*.127.0.0.1']
