@@ -38,7 +38,7 @@ WORKDIR /usr/local/eka/middleware
 
 # Copy requirements.txt and install Python dependencies
 COPY ./requirements.txt requirements.txt
-RUN python3 -m pip install -r requirements.txt
+RUN python3 -m pip install -r requirements.txt && rm requirements.txt
 
 # Copy configuration files for uWSGI
 COPY dockerconfig/uwsgi_middleware.ini /etc/uwsgi_middleware.ini
