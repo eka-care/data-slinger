@@ -178,3 +178,24 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 STATIC_ROOT = str(BASE_DIR) + '/static/'
 
+# Get OpenTelemetry configurations from environment variables
+if os.getenv('OTEL_EXPORTER_OTLP_ENDPOINT', None):
+    from opentelemetry.instrumentation.django import DjangoInstrumentor
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export import BatchSpanProcessor
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+
+    from opentelemetry.sdk.resources import Resource
+    OTLP_ENDPOINT = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", os.getenv('OTEL_EXPORTER_OTLP_ENDPOINT'))
+    OLTP_API_KEY = os.getenv("OLTP_API_KEY")
+
+    # Setup OpenTelemetry Tracer
+    resource = Resource(attributes={"service.name": os.getenv("SERVICE_NAME")})
+    tracer_provider = TracerProvider(resource=resource)
+    span_processor = BatchSpanProcessor(
+        OTLPSpanExporter(endpoint=OTLP_ENDPOINT, headers=(("api-key", OLTP_API_KEY),))
+    )
+    tracer_provider.add_span_processor(span_processor)
+
+    # Apply OpenTelemetry Instrumentation
+    DjangoInstrumentor().instrument()
