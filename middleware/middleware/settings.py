@@ -188,7 +188,7 @@ if os.getenv('OTEL_EXPORTER_OTLP_ENDPOINT', None):
     from opentelemetry import trace
     from opentelemetry.sdk._logs import LoggerProvider
     from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
-    from opentelemetry.exporter.otlp.proto.http.log_exporter import OTLPLogExporter
+    from opentelemetry.exporter.otlp.proto.grpc._log_exporter import OTLPLogExporter
 
 
     OTLP_ENDPOINT = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
@@ -213,5 +213,5 @@ if os.getenv('OTEL_EXPORTER_OTLP_ENDPOINT', None):
         endpoint=f"{OTLP_ENDPOINT}/v1/logs",
         headers={"api-key": OLTP_API_KEY} if OLTP_API_KEY else None
     )
+    log_exporter = OTLPLogExporter(endpoint=OTLP_ENDPOINT)  
     logger_provider.add_log_record_processor(BatchLogRecordProcessor(log_exporter))
-
