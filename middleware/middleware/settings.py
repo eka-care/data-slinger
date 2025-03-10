@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import logging
 import os
 from pathlib import Path
 
@@ -186,6 +187,9 @@ if os.getenv('OTEL_EXPORTER_OTLP_ENDPOINT', None):
     from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
     from opentelemetry.sdk.resources import Resource
     from opentelemetry import trace
+    from opentelemetry.sdk.logs import LoggerProvider
+    from opentelemetry.sdk.logs.export import BatchLogRecordProcessor
+    from opentelemetry.exporter.otlp.proto.http.log_exporter import OTLPLogExporter
 
 
     OTLP_ENDPOINT = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
@@ -203,3 +207,19 @@ if os.getenv('OTEL_EXPORTER_OTLP_ENDPOINT', None):
 
     # Apply OpenTelemetry Instrumentation
     DjangoInstrumentor().instrument()
+
+    # Setup Logger Provider for OpenTelemetry Logs
+    logger_provider = LoggerProvider(resource=resource)
+    log_exporter = OTLPLogExporter(
+        endpoint=f"{OTLP_ENDPOINT}/v1/logs",
+        headers={"api-key": OLTP_API_KEY} if OLTP_API_KEY else None
+    )
+    logger_provider.add_log_record_processor(BatchLogRecordProcessor(log_exporter))
+
+    # Configure Django logging to send logs to OpenTelemetry
+    logging.basicConfig(level=logging.INFO)
+    logging.getLogger("django").setLevel(logging.INFO)
+
+    # Example: Log a startup message
+    logger = logging.getLogger(__name__)
+    logger.info("Django app started with OpenTelemetry logging!")
