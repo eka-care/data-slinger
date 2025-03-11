@@ -180,13 +180,17 @@ STATIC_ROOT = str(BASE_DIR) + '/static/'
 
 # Get OpenTelemetry configurations from environment variables
 if os.getenv('OTEL_EXPORTER_OTLP_ENDPOINT', None):
+    import atexit
+    from opentelemetry import trace
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+    from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
     from opentelemetry.instrumentation.django import DjangoInstrumentor
+    from opentelemetry.metrics import get_meter_provider
+    from opentelemetry.sdk.metrics import MeterProvider
+    from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
+    from opentelemetry.sdk.resources import Resource
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import BatchSpanProcessor
-    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-    from opentelemetry.sdk.resources import Resource
-    from opentelemetry import trace
-
 
     OTLP_ENDPOINT = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
     OLTP_API_KEY = os.getenv("OLTP_API_KEY")
@@ -203,3 +207,14 @@ if os.getenv('OTEL_EXPORTER_OTLP_ENDPOINT', None):
 
     # Apply OpenTelemetry Instrumentation
     DjangoInstrumentor().instrument()
+
+    # Set up OpenTelemetry Metric Exporter
+    metric_exporter = OTLPMetricExporter(endpoint=f"{OTLP_ENDPOINT}/v1/metrics")
+    reader = PeriodicExportingMetricReader(metric_exporter, export_interval_millis=10000)
+
+    # Configure Meter Provider
+    meter_provider = MeterProvider(metric_readers=[reader])
+    get_meter_provider().set_meter_provider(meter_provider)
+
+    # Ensure OpenTelemetry cleans up properly on exit
+    atexit.register(meter_provider.shutdown)
