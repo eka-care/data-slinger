@@ -139,14 +139,18 @@ LOGGING = {
             "class": "logging.StreamHandler",
             "formatter": "standard",
         },
+        "otel": {
+            "class": "logging.StreamHandler",  # OpenTelemetry logs
+            "formatter": "standard",
+        },
     },
     "root": {
-        "handlers": ["console"],
+        "handlers": ["console", "otel"],
         "level": "DEBUG",
     },
     "loggers": {
         "django": {
-            "handlers": ["console"],
+            "handlers": ["console", "otel"],
             "level": "INFO",
             "propagate": True,
         },
@@ -186,10 +190,12 @@ if os.getenv('OTEL_EXPORTER_OTLP_ENDPOINT', None):
     from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
     from opentelemetry.sdk.resources import Resource
     from opentelemetry import trace
-    from opentelemetry.sdk._logs import LoggerProvider
+    from opentelemetry._logs import set_logger_provider
+    from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
     from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
-    from opentelemetry.exporter.otlp.proto.grpc._log_exporter import OTLPLogExporter
-
+    from opentelemetry.exporter.otlp.proto.http._log_exporter import OTLPLogExporter
+    import logging
+    import atexit
 
     OTLP_ENDPOINT = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
     OLTP_API_KEY = os.getenv("OLTP_API_KEY")
@@ -207,11 +213,18 @@ if os.getenv('OTEL_EXPORTER_OTLP_ENDPOINT', None):
     # Apply OpenTelemetry Instrumentation
     DjangoInstrumentor().instrument()
 
-    # Setup Logger Provider for OpenTelemetry Logs
     logger_provider = LoggerProvider(resource=resource)
+    set_logger_provider(logger_provider)
+
     log_exporter = OTLPLogExporter(
         endpoint=f"{OTLP_ENDPOINT}/v1/logs",
-        headers={"api-key": OLTP_API_KEY} if OLTP_API_KEY else None
+        headers={"api-key": OLTP_API_KEY} if OLTP_API_KEY else None,
     )
-    log_exporter = OTLPLogExporter(endpoint=OTLP_ENDPOINT)  
     logger_provider.add_log_record_processor(BatchLogRecordProcessor(log_exporter))
+
+    otel_handler = LoggingHandler(logger_provider=logger_provider)
+    logging.getLogger().addHandler(otel_handler)
+
+    # Ensure OpenTelemetry flushes logs before the app exits
+    atexit.register(logger_provider.shutdown)
+    atexit.register(tracer_provider.shutdown)
