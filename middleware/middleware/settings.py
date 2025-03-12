@@ -187,7 +187,7 @@ if os.getenv('OTEL_EXPORTER_OTLP_ENDPOINT', None):
     from opentelemetry.instrumentation.django import DjangoInstrumentor
     from opentelemetry.metrics import set_meter_provider
     from opentelemetry.sdk.metrics import MeterProvider
-    from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
+    from opentelemetry.sdk.metrics.export import BackgroundMetricReader
     from opentelemetry.sdk.resources import Resource
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import BatchSpanProcessor
@@ -210,7 +210,7 @@ if os.getenv('OTEL_EXPORTER_OTLP_ENDPOINT', None):
 
     # Set up OpenTelemetry Metric Exporter
     metric_exporter = OTLPMetricExporter(endpoint=f"{OTLP_ENDPOINT}/v1/metrics", headers=(("api-key", OLTP_API_KEY),),)
-    reader = PeriodicExportingMetricReader(metric_exporter, export_interval_millis=10000)
+    reader = BackgroundMetricReader(metric_exporter)
 
     # Configure Meter Provider
     meter_provider = MeterProvider(resource=resource, metric_readers=[reader])
