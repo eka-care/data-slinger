@@ -189,8 +189,9 @@ if os.getenv('OTEL_EXPORTER_OTLP_ENDPOINT', None):
     set_meter_provider(meter_provider)
 
     # Apply OpenTelemetry Instrumentation
-    LoggingInstrumentor().instrument()
     DjangoInstrumentor().instrument()
+    LoggingInstrumentor().instrument()
+
 
     # Ensure OpenTelemetry cleans up properly on exit
     atexit.register(meter_provider.shutdown)
@@ -210,6 +211,13 @@ LOGGING = {
             "level": "DEBUG",
             "class": "logging.StreamHandler",
             "formatter": "otel",
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
         },
     },
     "root": {
