@@ -166,6 +166,7 @@ if os.getenv('OTEL_EXPORTER_OTLP_ENDPOINT', None):
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import BatchSpanProcessor
     from opentelemetry.instrumentation.logging import LoggingInstrumentor
+    from opentelemetry.instrumentation.requests import RequestsInstrumentor
 
 
     OTLP_ENDPOINT = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
@@ -191,6 +192,7 @@ if os.getenv('OTEL_EXPORTER_OTLP_ENDPOINT', None):
     # Apply OpenTelemetry Instrumentation
     DjangoInstrumentor().instrument()
     LoggingInstrumentor().instrument()
+    RequestsInstrumentor().instrument()
 
 
     # Ensure OpenTelemetry cleans up properly on exit
