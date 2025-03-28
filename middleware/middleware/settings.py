@@ -103,6 +103,8 @@ DATABASES = {
         'PASSWORD': os.environ.get("DB_PASSWORD"),
         'HOST': os.environ.get("DB_HOST"),
         'PORT': os.environ.get("DB_PORT"),
+        'CONN_MAX_AGE': 600,
+        'OPTIONS': {'init_command': 'SET SESSION wait_timeout=600'}
     }
 }
 
@@ -124,34 +126,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "standard": {
-            "format": "%(asctime)s %(levelname)-8s %(name)-15s %(message)s",
-            "datefmt": "%Y-%m-%d %H:%M:%S",
-        },
-    },
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-            "formatter": "standard",
-        },
-    },
-    "root": {
-        "handlers": ["console"],
-        "level": "DEBUG",
-    },
-    "loggers": {
-        "django": {
-            "handlers": ["console"],
-            "level": "INFO",
-            "propagate": True,
-        },
-    },
-}
 
 
 # Internationalization
@@ -191,6 +165,8 @@ if os.getenv('OTEL_EXPORTER_OTLP_ENDPOINT', None):
     from opentelemetry.sdk.resources import Resource
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import BatchSpanProcessor
+    from opentelemetry.instrumentation.logging import LoggingInstrumentor
+
 
     OTLP_ENDPOINT = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
     OLTP_API_KEY = os.getenv("OLTP_API_KEY")
@@ -213,7 +189,31 @@ if os.getenv('OTEL_EXPORTER_OTLP_ENDPOINT', None):
     set_meter_provider(meter_provider)
 
     # Apply OpenTelemetry Instrumentation
+    LoggingInstrumentor().instrument()
     DjangoInstrumentor().instrument()
 
     # Ensure OpenTelemetry cleans up properly on exit
     atexit.register(meter_provider.shutdown)
+
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "otel": {
+            "format": "{levelname} {asctime} {module} {message}",
+            "()": "opentelemetry.instrumentation.logging.LoggingInstrumentor",
+        },
+    },
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "otel",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+}
