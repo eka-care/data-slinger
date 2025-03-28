@@ -205,7 +205,6 @@ LOGGING = {
     "formatters": {
         "otel": {
             "format": "%(asctime)s %(levelname)s [%(name)s] %(message)s",
-            "()": "opentelemetry.instrumentation.logging.LoggingInstrumentor",
         },
     },
     "handlers": {
@@ -215,11 +214,11 @@ LOGGING = {
             "formatter": "otel",
         },
     },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': True,
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": True,
         },
     },
     "root": {
