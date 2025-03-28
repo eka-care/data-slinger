@@ -191,7 +191,7 @@ if os.getenv('OTEL_EXPORTER_OTLP_ENDPOINT', None):
 
     # Apply OpenTelemetry Instrumentation
     DjangoInstrumentor().instrument()
-    LoggingInstrumentor().instrument()
+    LoggingInstrumentor().instrument(set_logging_format=True)
     RequestsInstrumentor().instrument()
 
 
@@ -204,7 +204,7 @@ LOGGING = {
     "disable_existing_loggers": False,
     "formatters": {
         "otel": {
-            "format": "{levelname} {asctime} {module} {message}",
+            "format": "%(asctime)s %(levelname)s [%(name)s] %(message)s",
             "()": "opentelemetry.instrumentation.logging.LoggingInstrumentor",
         },
     },
