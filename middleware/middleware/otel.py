@@ -15,17 +15,18 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 
-def initialize_telemetry():
+def initialize_telemetry(service_name):
     resource = Resource(attributes={
-        SERVICE_NAME: "medanta_uat",
+        SERVICE_NAME: service_name
     })
 
-    # api_key = os.getenv("OTEL_API_KEY")
-    headers = (("api-key", "d69e06e854d6f5d5c827dba8a806d5b9c3bdNRAL"),)
+    api_key = os.getenv("OTEL_API_KEY")
+    headers = (("api-key", api_key),)
 
     # Metrics Setup
     metric_exporter = OTLPMetricExporter(
         headers=headers,
+        timeout=10
     )
     reader = PeriodicExportingMetricReader(metric_exporter)
 
@@ -36,6 +37,7 @@ def initialize_telemetry():
     tracer_provider = TracerProvider(resource=resource)
     span_exporter = OTLPSpanExporter(
         headers=headers,
+        timeout=10
     )
     span_processor = BatchSpanProcessor(span_exporter)
     tracer_provider.add_span_processor(span_processor)
