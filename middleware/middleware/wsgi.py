@@ -11,11 +11,13 @@ import os
 
 service_name = os.getenv("SERVICENAME")
 
-from .otel import initialize_telemetry
-initialize_telemetry(service_name)
 
 from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'middleware.settings')
 
+# from .otel import initialize_telemetry
+# initialize_telemetry(service_name)
+
 application = get_wsgi_application()
+
