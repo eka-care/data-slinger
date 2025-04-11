@@ -28,6 +28,7 @@ def initialize_telemetry(service_name):
         headers=headers,
         timeout=10
     )
+
     reader = PeriodicExportingMetricReader(metric_exporter)
 
     meter_provider = MeterProvider(resource=resource, metric_readers=[reader])
