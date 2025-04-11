@@ -33,8 +33,6 @@ RUN python3 -m pip install -r requirements.txt && rm requirements.txt
 # Copy configuration files for uWSGI
 COPY dockerconfig/uwsgi_middleware.ini /etc/uwsgi_middleware.ini
 
-COPY .env .
-
 ENV DJANGO_SETTINGS_MODULE=webapp.settings
 
 # Copy the application code
@@ -47,4 +45,4 @@ COPY ./middleware .
 EXPOSE 80
 
 # Start uWSGI.
-CMD ["/usr/local/bin/uwsgi", "--http", ":80", "--module", "middleware.wsgi:application"]
+CMD [ "/usr/local/bin/uwsgi", "--ini", "/etc/uwsgi_middleware.ini", "--lazy-apps"]

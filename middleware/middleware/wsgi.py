@@ -9,10 +9,7 @@ https://docs.djangoproject.com/en/5.1/howto/deployment/wsgi/
 
 import os
 
-from dotenv import load_dotenv
-load_dotenv('/usr/local/eka/middleware/.env')
-
-service_name = os.environ.get("SERVICENAME")
+service_name = os.getenv("SERVICENAME")
 
 from .otel import initialize_telemetry
 initialize_telemetry(service_name)

@@ -1,9 +1,6 @@
 import os
 import logging
-
-from dotenv import load_dotenv
-load_dotenv('/usr/local/eka/middleware/.env')
-
+from os import getenv
 
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.instrumentation.django import DjangoInstrumentor
@@ -31,37 +28,16 @@ from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExport
 def initialize_telemetry(service_name):
     resource = Resource(attributes={
         SERVICE_NAME: service_name,
-        "environment": os.environ.get("ENVIRONMENT", "developement"),
-        "application": os.environ.get("APPLICATION_NAME", "test_webapp"),
+        "environment": os.getenv("ENVIRONMENT", "developement"),
+        "application": os.getenv("APPLICATION_NAME", "test_webapp"),
     })
 
-    api_key = os.environ.get("NEW_RELIC_LICENSE_KEY")
+    api_key = os.getenv("NEW_RELIC_LICENSE_KEY")
     headers = (("api-key", api_key),)
-
-    # Logging Setup
-    logger_provider = LoggerProvider(resource=resource)
-    set_logger_provider(logger_provider)
-
-    log_exporter = OTLPLogExporter(
-        endpoint=os.environ.get("LOG_ENDPOINT"),
-        headers=headers,
-        timeout=10
-    )
-    logger_provider.add_log_record_processor(SimpleLogRecordProcessor(log_exporter))
-    # logger_provider.add_log_record_processor(BatchLogRecordProcessor(log_exporter))
-
-    LoggingInstrumentor().instrument(set_logging_format=True, log_level=logging.INFO)
-
-    handler = LoggingHandler(level=logging.INFO, logger_provider=logger_provider)
-    logging.getLogger().addHandler(handler)
-    logging.getLogger().setLevel(logging.INFO)
-
-    logging.info("Application started")
-    # LoggingInstrumentor().instrument(set_logging_format=True)
 
     # Metrics Setup
     metric_exporter = OTLPMetricExporter(
-        endpoint=os.environ.get("METRICS_ENDPOINT"),
+        endpoint=os.getenv("METRICS_ENDPOINT"),
         headers=headers,
         timeout=10
     )
@@ -73,7 +49,7 @@ def initialize_telemetry(service_name):
     # Tracing Setup
     tracer_provider = TracerProvider(resource=resource)
     span_exporter = OTLPSpanExporter(
-        endpoint=os.environ.get("TRACES_ENDPOINT"),
+        endpoint=os.getenv("TRACES_ENDPOINT"),
         headers=headers,
         timeout=10
     )
@@ -82,5 +58,3 @@ def initialize_telemetry(service_name):
     trace.set_tracer_provider(tracer_provider)
 
     DjangoInstrumentor().instrument()
-
-    logging.info("OpenTelemetry initialized with HTTP exporter: Metrics & Traces enabled")
