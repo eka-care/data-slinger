@@ -43,4 +43,4 @@ RUN python3 manage.py collectstatic --noinput
 EXPOSE 80
 
 # Start uWSGI.
-CMD ["opentelemetry-instrument", "/usr/local/bin/uwsgi", "--ini", "/etc/uwsgi_middleware.ini", "--lazy-apps"]
+CMD [ "/usr/local/bin/uwsgi", "--ini", "/etc/uwsgi_middleware.ini", "--lazy-apps"]
