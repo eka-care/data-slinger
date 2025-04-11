@@ -33,13 +33,11 @@ RUN python3 -m pip install -r requirements.txt && rm requirements.txt
 # Copy configuration files for uWSGI
 COPY dockerconfig/uwsgi_middleware.ini /etc/uwsgi_middleware.ini
 
-ENV DJANGO_SETTINGS_MODULE=webapp.settings
-
 # Copy the application code
 COPY ./middleware .
 
 # Run collectstatic for Django to collect static files
-# RUN python3 manage.py collectstatic --noinput
+RUN python3 manage.py collectstatic --noinput
 
 # Expose port 80 for HTTP traffic
 EXPOSE 80
