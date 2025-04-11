@@ -1,46 +1,25 @@
-FROM python:3.11-slim-bullseye
+FROM python:3.11-slim
 
-# Install required system packages and tools
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-    build-essential \
-    libmariadb-dev \
-    default-mysql-client \
-    python3-dev \
-    pkg-config \
-    libssl-dev \
-    libpcre3-dev \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# Set timezone to Asia/Kolkata
-RUN rm -f /etc/localtime \
-    && ln -s /usr/share/zoneinfo/Asia/Kolkata /etc/localtime
+RUN apt-get update && apt-get install -y build-essential
 
-# Create necessary directories for logs and middleware
-RUN mkdir -p /logs/middleware/
+WORKDIR /app
 
-# Upgrade pip
-RUN python3 -m pip install --upgrade pip
+COPY requirements.txt .
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Set working directory for the application
-WORKDIR /usr/local/eka/middleware
+COPY .env .
 
-# Copy requirements.txt and install Python dependencies
-COPY ./requirements.txt requirements.txt
-RUN python3 -m pip install -r requirements.txt && rm requirements.txt
+RUN django-admin startproject webapp .
 
-# Copy configuration files for uWSGI
-COPY dockerconfig/uwsgi_middleware.ini /etc/uwsgi_middleware.ini
+COPY otel.py ./webapp/
+COPY wsgi.py ./webapp/
 
-# Copy the application code
-COPY ./middleware .
+ENV DJANGO_SETTINGS_MODULE=webapp.settings
 
-# Run collectstatic for Django to collect static files
-RUN python3 manage.py collectstatic --noinput
+EXPOSE 8000
 
-# Expose port 80 for HTTP traffic
-EXPOSE 80
-
-# Start uWSGI.
-CMD ["opentelemetry-instrument", "/usr/local/bin/uwsgi", "--ini", "/etc/uwsgi_middleware.ini", "--lazy-apps"]
+# CMD [ "python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["uwsgi", "--http", ":8000", "--module", "webapp.wsgi:application"]
