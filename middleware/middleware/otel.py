@@ -17,8 +17,7 @@ from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExport
 
 def initialize_telemetry(service_name):
     resource = Resource(attributes={
-        SERVICE_NAME: service_name,
-        "environment": os.getenv("ENVIRONMENT", "developement")
+        SERVICE_NAME: service_name
     })
 
     api_key = os.getenv("OTEL_API_KEY")

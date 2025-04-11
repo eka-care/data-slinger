@@ -16,8 +16,8 @@ from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'middleware.settings')
 
-# from .otel import initialize_telemetry
-# initialize_telemetry(service_name)
+from .otel import initialize_telemetry
+initialize_telemetry(service_name)
 
 application = get_wsgi_application()
 
